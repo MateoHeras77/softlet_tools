@@ -15,8 +15,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export function ProfileMenu() {
+export function ProfileMenu({ collapsed = false }: { collapsed?: boolean }) {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
@@ -47,15 +48,20 @@ export function ProfileMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent w-full outline-none">
-        <Avatar className="h-8 w-8">
+      <DropdownMenuTrigger className={cn(
+        "flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent w-full outline-none",
+        collapsed && "justify-center px-0"
+      )}>
+        <Avatar className="h-8 w-8 shrink-0">
           <AvatarImage src={avatarUrl} alt={name} referrerPolicy="no-referrer" />
           <AvatarFallback className="text-xs">{initials}</AvatarFallback>
         </Avatar>
-        <div className="flex flex-col items-start text-sm leading-tight min-w-0">
-          <span className="font-medium truncate w-full">{name}</span>
-          <span className="text-xs text-muted-foreground truncate w-full">{email}</span>
-        </div>
+        {!collapsed && (
+          <div className="flex flex-col items-start text-sm leading-tight min-w-0">
+            <span className="font-medium truncate w-full">{name}</span>
+            <span className="text-xs text-muted-foreground truncate w-full">{email}</span>
+          </div>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>

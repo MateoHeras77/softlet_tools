@@ -17,37 +17,52 @@ export function NoteEditor({ note, topics, onUpdate }: NoteEditorProps) {
   const [content, setContent] = useState(note.content);
   const [topic, setTopic] = useState(note.topic || "");
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const isDirtyRef = useRef(false);
+  const noteIdRef = useRef(note.id);
 
-  // Sync state when switching notes
+  // Only sync from parent when switching to a different note
   useEffect(() => {
-    setTitle(note.title);
-    setContent(note.content);
-    setTopic(note.topic || "");
+    if (noteIdRef.current !== note.id) {
+      noteIdRef.current = note.id;
+      setTitle(note.title);
+      setContent(note.content);
+      setTopic(note.topic || "");
+      isDirtyRef.current = false;
+    }
   }, [note.id, note.title, note.content, note.topic]);
 
-  const debouncedUpdate = useCallback(
+  const save = useCallback(
     (updates: Partial<Pick<Note, "title" | "content" | "topic">>) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      isDirtyRef.current = true;
       debounceRef.current = setTimeout(() => {
         onUpdate(note.id, updates);
-      }, 500);
+        isDirtyRef.current = false;
+      }, 800);
     },
     [note.id, onUpdate]
   );
 
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
   const handleTitleChange = (value: string) => {
     setTitle(value);
-    debouncedUpdate({ title: value });
+    save({ title: value });
   };
 
   const handleContentChange = (value: string) => {
     setContent(value);
-    debouncedUpdate({ content: value });
+    save({ content: value });
   };
 
   const handleTopicChange = (value: string) => {
     setTopic(value);
-    debouncedUpdate({ topic: value || null });
+    save({ topic: value || null });
   };
 
   const handleTopicBadgeClick = (t: string) => {
