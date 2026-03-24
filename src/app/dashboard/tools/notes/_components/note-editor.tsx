@@ -1,38 +1,42 @@
 "use client";
 
 import { Note } from "@/hooks/use-notes";
+import { useNoteImages } from "@/hooks/use-note-images";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { ImageLightbox } from "./image-lightbox";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Image from "@tiptap/extension-image";
+import Placeholder from "@tiptap/extension-placeholder";
+import "./note-editor.css";
+
+const EMPTY_DOC: JSONContent = {
+  type: "doc",
+  content: [{ type: "paragraph" }],
+};
 
 interface NoteEditorProps {
   note: Note;
   topics: string[];
-  onUpdate: (id: string, updates: Partial<Pick<Note, "title" | "content" | "topic">>) => void;
+  onUpdate: (
+    id: string,
+    updates: Partial<Pick<Note, "title" | "content_json" | "topic">>
+  ) => void;
 }
 
 export function NoteEditor({ note, topics, onUpdate }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
-  const [content, setContent] = useState(note.content);
   const [topic, setTopic] = useState(note.topic || "");
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
   const isDirtyRef = useRef(false);
   const noteIdRef = useRef(note.id);
-
-  // Only sync from parent when switching to a different note
-  useEffect(() => {
-    if (noteIdRef.current !== note.id) {
-      noteIdRef.current = note.id;
-      setTitle(note.title);
-      setContent(note.content);
-      setTopic(note.topic || "");
-      isDirtyRef.current = false;
-    }
-  }, [note.id, note.title, note.content, note.topic]);
+  const { uploadImage } = useNoteImages();
 
   const save = useCallback(
-    (updates: Partial<Pick<Note, "title" | "content" | "topic">>) => {
+    (updates: Partial<Pick<Note, "title" | "content_json" | "topic">>) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       isDirtyRef.current = true;
       debounceRef.current = setTimeout(() => {
@@ -42,6 +46,62 @@ export function NoteEditor({ note, topics, onUpdate }: NoteEditorProps) {
     },
     [note.id, onUpdate]
   );
+
+  const editor = useEditor({
+    immediatelyRender: false,
+    extensions: [
+      StarterKit,
+      Image.configure({ inline: false }),
+      Placeholder.configure({ placeholder: "Start writing..." }),
+    ],
+    content: note.content_json || EMPTY_DOC,
+    onUpdate: ({ editor }) => {
+      save({ content_json: editor.getJSON() });
+    },
+    editorProps: {
+      attributes: {
+        class:
+          "flex-1 outline-none text-sm leading-relaxed min-h-0 overflow-y-auto",
+      },
+      handlePaste: (view, event) => {
+        const files = event.clipboardData?.files;
+        if (!files || files.length === 0) return false;
+
+        const imageFiles = Array.from(files).filter((f) =>
+          f.type.startsWith("image/")
+        );
+        if (imageFiles.length === 0) return false;
+
+        imageFiles.forEach(async (file) => {
+          const url = await uploadImage(note.id, file);
+          if (url && editor) {
+            editor.chain().focus().setImage({ src: url }).run();
+          }
+        });
+
+        return true;
+      },
+      handleClick: (_view, _pos, event) => {
+        const target = event.target as HTMLElement;
+        if (target.tagName === "IMG") {
+          setLightboxSrc((target as HTMLImageElement).src);
+          return true;
+        }
+        return false;
+      },
+    },
+  });
+
+  // Sync content when switching notes
+  useEffect(() => {
+    if (noteIdRef.current !== note.id) {
+      noteIdRef.current = note.id;
+      setTitle(note.title);
+      setTopic(note.topic || "");
+      isDirtyRef.current = false;
+      editor?.commands.setContent(note.content_json || EMPTY_DOC);
+    }
+  }, [note.id, note.title, note.topic, note.content_json, editor]);
 
   // Cleanup debounce on unmount
   useEffect(() => {
@@ -53,11 +113,6 @@ export function NoteEditor({ note, topics, onUpdate }: NoteEditorProps) {
   const handleTitleChange = (value: string) => {
     setTitle(value);
     save({ title: value });
-  };
-
-  const handleContentChange = (value: string) => {
-    setContent(value);
-    save({ content: value });
   };
 
   const handleTopicChange = (value: string) => {
@@ -103,16 +158,22 @@ export function NoteEditor({ note, topics, onUpdate }: NoteEditorProps) {
         )}
       </div>
 
-      <Textarea
-        value={content}
-        onChange={(e) => handleContentChange(e.target.value)}
-        placeholder="Start writing..."
-        className="flex-1 resize-none border-none focus-visible:ring-0 text-sm leading-relaxed shadow-none"
+      <EditorContent
+        editor={editor}
+        className="flex-1 min-h-0 overflow-y-auto text-sm leading-relaxed"
       />
 
       <p className="text-xs text-muted-foreground mt-2">
         Last updated: {new Date(note.updated_at).toLocaleString()}
       </p>
+
+      <ImageLightbox
+        src={lightboxSrc}
+        open={!!lightboxSrc}
+        onOpenChange={(open) => {
+          if (!open) setLightboxSrc(null);
+        }}
+      />
     </div>
   );
 }

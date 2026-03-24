@@ -1,6 +1,7 @@
 "use client";
 
 import { useNotes } from "@/hooks/use-notes";
+import { useNoteImages } from "@/hooks/use-note-images";
 import { NotesSidebar } from "./_components/notes-sidebar";
 import { NoteEditor } from "./_components/note-editor";
 import { useState } from "react";
@@ -8,6 +9,7 @@ import { StickyNote } from "lucide-react";
 
 export default function NotesPage() {
   const { notes, loading, topics, createNote, updateNote, deleteNote } = useNotes();
+  const { deleteNoteImages } = useNoteImages();
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
 
   const selectedNote = notes.find((n) => n.id === selectedNoteId) || null;
@@ -20,6 +22,7 @@ export default function NotesPage() {
   };
 
   const handleDelete = async (id: string) => {
+    await deleteNoteImages(id);
     await deleteNote(id);
     if (selectedNoteId === id) {
       setSelectedNoteId(null);

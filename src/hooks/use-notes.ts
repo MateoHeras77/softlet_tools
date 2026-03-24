@@ -2,12 +2,19 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState, useCallback, useRef } from "react";
+import type { JSONContent } from "@tiptap/react";
+
+const EMPTY_DOC: JSONContent = {
+  type: "doc",
+  content: [{ type: "paragraph" }],
+};
 
 export interface Note {
   id: string;
   user_id: string;
   title: string;
   content: string;
+  content_json: JSONContent | null;
   topic: string | null;
   created_at: string;
   updated_at: string;
@@ -72,7 +79,13 @@ export function useNotes() {
 
       const { data, error } = await supabase
         .from("notes")
-        .insert({ user_id: user.id, title, content: "", topic })
+        .insert({
+          user_id: user.id,
+          title,
+          content: "",
+          content_json: EMPTY_DOC,
+          topic,
+        })
         .select()
         .single();
 
@@ -83,7 +96,10 @@ export function useNotes() {
   );
 
   const updateNote = useCallback(
-    async (id: string, updates: Partial<Pick<Note, "title" | "content" | "topic">>) => {
+    async (
+      id: string,
+      updates: Partial<Pick<Note, "title" | "content" | "content_json" | "topic">>
+    ) => {
       const { error } = await supabase
         .from("notes")
         .update({ ...updates, updated_at: new Date().toISOString() })

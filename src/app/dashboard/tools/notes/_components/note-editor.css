@@ -1,0 +1,25 @@
+.tiptap {
+  height: 100%;
+  outline: none;
+}
+
+.tiptap img {
+  max-width: 300px;
+  border-radius: 0.5rem;
+  border: 2px solid hsl(217 91% 60%);
+  cursor: pointer;
+  margin: 0.5rem 0;
+}
+
+.tiptap img:hover {
+  outline: 2px solid hsl(var(--primary) / 0.5);
+  outline-offset: 2px;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+}
