@@ -4,7 +4,7 @@ import { useNotes } from "@/hooks/use-notes";
 import { useNoteImages } from "@/hooks/use-note-images";
 import { NotesSidebar } from "./_components/notes-sidebar";
 import { NoteEditor } from "./_components/note-editor";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { StickyNote } from "lucide-react";
 
 export default function NotesPage() {
@@ -14,20 +14,18 @@ export default function NotesPage() {
 
   const selectedNote = notes.find((n) => n.id === selectedNoteId) || null;
 
-  const handleCreate = async () => {
+  const handleCreate = useCallback(async () => {
     const note = await createNote("Untitled");
     if (note) {
       setSelectedNoteId(note.id);
     }
-  };
+  }, [createNote]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     await deleteNoteImages(id);
     await deleteNote(id);
-    if (selectedNoteId === id) {
-      setSelectedNoteId(null);
-    }
-  };
+    setSelectedNoteId((prev) => (prev === id ? null : prev));
+  }, [deleteNoteImages, deleteNote]);
 
   if (loading) {
     return (

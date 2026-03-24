@@ -5,7 +5,7 @@ import { useNoteImages } from "@/hooks/use-note-images";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ImageLightbox } from "./image-lightbox";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -26,13 +26,19 @@ interface NoteEditorProps {
   ) => void;
 }
 
-export function NoteEditor({ note, topics, onUpdate }: NoteEditorProps) {
+export const NoteEditor = memo(function NoteEditor({
+  note,
+  topics,
+  onUpdate,
+}: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [topic, setTopic] = useState(note.topic || "");
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
   const isDirtyRef = useRef(false);
   const noteIdRef = useRef(note.id);
+  const onUpdateRef = useRef(onUpdate);
+  onUpdateRef.current = onUpdate;
   const { uploadImage } = useNoteImages();
 
   const save = useCallback(
@@ -40,11 +46,11 @@ export function NoteEditor({ note, topics, onUpdate }: NoteEditorProps) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       isDirtyRef.current = true;
       debounceRef.current = setTimeout(() => {
-        onUpdate(note.id, updates);
+        onUpdateRef.current(noteIdRef.current, updates);
         isDirtyRef.current = false;
       }, 800);
     },
-    [note.id, onUpdate]
+    []
   );
 
   const editor = useEditor({
@@ -72,12 +78,14 @@ export function NoteEditor({ note, topics, onUpdate }: NoteEditorProps) {
         );
         if (imageFiles.length === 0) return false;
 
-        imageFiles.forEach(async (file) => {
-          const url = await uploadImage(note.id, file);
-          if (url && editor) {
-            editor.chain().focus().setImage({ src: url }).run();
+        (async () => {
+          for (const file of imageFiles) {
+            const url = await uploadImage(noteIdRef.current, file);
+            if (url && editor) {
+              editor.chain().focus().setImage({ src: url }).run();
+            }
           }
-        });
+        })();
 
         return true;
       },
@@ -92,16 +100,26 @@ export function NoteEditor({ note, topics, onUpdate }: NoteEditorProps) {
     },
   });
 
-  // Sync content when switching notes
+  // Sync content when switching notes — flush pending save first
   useEffect(() => {
     if (noteIdRef.current !== note.id) {
+      // Flush pending debounce for the OLD note
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        if (isDirtyRef.current && editor) {
+          onUpdateRef.current(noteIdRef.current, {
+            content_json: editor.getJSON(),
+          });
+        }
+      }
+
       noteIdRef.current = note.id;
       setTitle(note.title);
       setTopic(note.topic || "");
       isDirtyRef.current = false;
       editor?.commands.setContent(note.content_json || EMPTY_DOC);
     }
-  }, [note.id, note.title, note.topic, note.content_json, editor]);
+  }, [note.id, editor]);
 
   // Cleanup debounce on unmount
   useEffect(() => {
@@ -123,7 +141,7 @@ export function NoteEditor({ note, topics, onUpdate }: NoteEditorProps) {
   const handleTopicBadgeClick = (t: string) => {
     const newTopic = topic === t ? "" : t;
     setTopic(newTopic);
-    onUpdate(note.id, { topic: newTopic || null });
+    onUpdateRef.current(note.id, { topic: newTopic || null });
   };
 
   return (
@@ -176,4 +194,4 @@ export function NoteEditor({ note, topics, onUpdate }: NoteEditorProps) {
       />
     </div>
   );
-}
+});

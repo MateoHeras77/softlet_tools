@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import type { JSONContent } from "@tiptap/react";
 
 const EMPTY_DOC: JSONContent = {
@@ -115,7 +115,10 @@ export function useNotes() {
     return !error;
   }, []);
 
-  const topics = [...new Set(notes.map((n) => n.topic).filter(Boolean))] as string[];
+  const topics = useMemo(
+    () => [...new Set(notes.map((n) => n.topic).filter(Boolean))] as string[],
+    [notes]
+  );
 
   return { notes, loading, topics, createNote, updateNote, deleteNote };
 }
