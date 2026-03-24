@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { tools } from "@/lib/tools/registry";
 import { ProfileMenu } from "./profile-menu";
 import { cn } from "@/lib/utils";
-import { StickyNote, Type, LayoutDashboard, Wrench, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { StickyNote, Type, Highlighter, LayoutDashboard, Wrench, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -13,6 +13,7 @@ import { useState } from "react";
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   StickyNote,
   Type,
+  Highlighter,
 };
 
 export function Sidebar() {

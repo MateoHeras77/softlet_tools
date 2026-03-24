@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { StickyNote, Type, Wrench } from "lucide-react";
+import { StickyNote, Type, Highlighter, Wrench } from "lucide-react";
 import type { ToolDefinition } from "@/lib/tools/types";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   StickyNote,
   Type,
+  Highlighter,
 };
 
 export function ToolCard({ tool }: { tool: ToolDefinition }) {

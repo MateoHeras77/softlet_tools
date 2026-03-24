@@ -15,4 +15,11 @@ export const tools: ToolDefinition[] = [
     icon: "Type",
     href: "/dashboard/tools/text-transformer",
   },
+  {
+    id: "web-highlights",
+    name: "Web Highlights",
+    description: "Browse your web highlights from any page",
+    icon: "Highlighter",
+    href: "/dashboard/tools/highlights",
+  },
 ];
