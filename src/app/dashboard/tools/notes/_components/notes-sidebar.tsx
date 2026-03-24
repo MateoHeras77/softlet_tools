@@ -38,7 +38,7 @@ export const NotesSidebar = memo(function NotesSidebar({
   });
 
   return (
-    <div className="flex h-full w-72 flex-col border-r bg-card">
+    <div className="flex h-full w-full flex-col border-r bg-card">
       <div className="p-3 space-y-3">
         <Button onClick={onCreateNote} className="w-full gap-2" size="sm">
           <Plus className="h-4 w-4" />
@@ -87,7 +87,7 @@ export const NotesSidebar = memo(function NotesSidebar({
               <div
                 key={note.id}
                 className={cn(
-                  "group flex items-center gap-2 rounded-lg px-3 py-2 text-sm cursor-pointer transition-colors",
+                  "group flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm cursor-pointer transition-colors min-h-[44px]",
                   selectedNoteId === note.id
                     ? "bg-accent text-accent-foreground"
                     : "hover:bg-accent/50"
@@ -107,7 +107,7 @@ export const NotesSidebar = memo(function NotesSidebar({
                     e.stopPropagation();
                     onDeleteNote(note.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                  className="md:opacity-0 md:group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>

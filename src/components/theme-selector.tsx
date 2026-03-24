@@ -65,7 +65,7 @@ export function ThemeSelector() {
           title={theme.name}
           onClick={() => selectTheme(idx)}
           className={cn(
-            "h-6 w-6 rounded-full border-2 transition-all hover:scale-110",
+            "h-8 w-8 md:h-6 md:w-6 rounded-full border-2 transition-all hover:scale-110",
             activeTheme === idx
               ? "border-white scale-110 ring-2 ring-white/30"
               : "border-transparent opacity-70 hover:opacity-100"

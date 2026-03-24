@@ -55,8 +55,8 @@ export const HighlightsDetail = memo(function HighlightsDetail({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b px-6 py-4 space-y-2">
-        <div className="flex items-start justify-between gap-4">
+      <div className="border-b px-3 py-3 md:px-6 md:py-4 space-y-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="min-w-0">
             <h2 className="text-lg font-semibold truncate">
               {page.title || "Untitled page"}
@@ -88,7 +88,7 @@ export const HighlightsDetail = memo(function HighlightsDetail({
       </div>
 
       {/* Highlights list */}
-      <div className="flex-1 overflow-auto p-4 space-y-3">
+      <div className="flex-1 overflow-auto p-3 md:p-4 space-y-3">
         {filtered.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-8">
             No highlights {colorFilter ? "with this color" : "yet"}

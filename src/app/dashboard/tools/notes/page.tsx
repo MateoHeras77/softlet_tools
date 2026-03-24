@@ -5,7 +5,9 @@ import { useNoteImages } from "@/hooks/use-note-images";
 import { NotesSidebar } from "./_components/notes-sidebar";
 import { NoteEditor } from "./_components/note-editor";
 import { useState, useCallback } from "react";
-import { StickyNote } from "lucide-react";
+import { StickyNote, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function NotesPage() {
   const { notes, loading, topics, createNote, updateNote, deleteNote } = useNotes();
@@ -37,18 +39,48 @@ export default function NotesPage() {
 
   return (
     <div className="flex h-full">
-      <NotesSidebar
-        notes={notes}
-        topics={topics}
-        selectedNoteId={selectedNoteId}
-        onSelectNote={setSelectedNoteId}
-        onCreateNote={handleCreate}
-        onDeleteNote={handleDelete}
-      />
+      {/* Sidebar: full-width on mobile when no note selected, hidden when note selected */}
+      <div
+        className={cn(
+          "md:block md:w-72 md:shrink-0",
+          selectedNoteId ? "hidden" : "w-full"
+        )}
+      >
+        <NotesSidebar
+          notes={notes}
+          topics={topics}
+          selectedNoteId={selectedNoteId}
+          onSelectNote={setSelectedNoteId}
+          onCreateNote={handleCreate}
+          onDeleteNote={handleDelete}
+        />
+      </div>
 
-      <div className="flex-1">
+      {/* Editor: hidden on mobile when no note selected */}
+      <div
+        className={cn(
+          "flex-1 min-w-0",
+          selectedNoteId ? "block" : "hidden md:block"
+        )}
+      >
         {selectedNote ? (
-          <NoteEditor note={selectedNote} topics={topics} onUpdate={updateNote} />
+          <div className="flex h-full flex-col">
+            {/* Mobile back button */}
+            <div className="flex items-center gap-2 px-3 py-2 border-b md:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => setSelectedNoteId(null)}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm font-medium truncate">
+                {selectedNote.title || "Untitled"}
+              </span>
+            </div>
+            <NoteEditor note={selectedNote} topics={topics} onUpdate={updateNote} />
+          </div>
         ) : (
           <div className="flex h-full flex-col items-center justify-center text-muted-foreground gap-3">
             <StickyNote className="h-12 w-12 opacity-20" />

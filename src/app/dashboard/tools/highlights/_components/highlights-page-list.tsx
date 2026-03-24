@@ -33,7 +33,7 @@ export const HighlightsPageList = memo(function HighlightsPageList({
   }, [pages, search]);
 
   return (
-    <div className="flex h-full w-80 flex-col border-r">
+    <div className="flex h-full w-full flex-col border-r">
       <div className="p-3 space-y-2">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -60,7 +60,7 @@ export const HighlightsPageList = memo(function HighlightsPageList({
                 key={page.id}
                 onClick={() => onSelectPage(page.id)}
                 className={cn(
-                  "group flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
+                  "group flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors min-h-[44px]",
                   selectedPageId === page.id
                     ? "bg-accent text-accent-foreground"
                     : "hover:bg-accent/50"
@@ -97,7 +97,7 @@ export const HighlightsPageList = memo(function HighlightsPageList({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-6 w-6 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDeletePage(page.id);

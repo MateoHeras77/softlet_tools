@@ -145,7 +145,7 @@ export const NoteEditor = memo(function NoteEditor({
   };
 
   return (
-    <div className="flex h-full flex-col p-6">
+    <div className="flex h-full flex-col p-3 md:p-6">
       <Input
         value={title}
         onChange={(e) => handleTitleChange(e.target.value)}
@@ -158,7 +158,7 @@ export const NoteEditor = memo(function NoteEditor({
           value={topic}
           onChange={(e) => handleTopicChange(e.target.value)}
           placeholder="Topic (e.g. work, personal)"
-          className="h-7 text-xs max-w-48"
+          className="h-7 text-xs max-w-full md:max-w-48"
         />
         {topics.length > 0 && (
           <div className="flex gap-1 flex-wrap">
